@@ -10,21 +10,43 @@ public class BoardSystem : MonoBehaviour
     
     CardSystemController controller;
 
-    [SerializeField] LevelDataConfig levelDataConfig;
-    
-    void Start()
+    public void Init(LevelDataConfig levelDataConfig, GameScoreSystem scoreSystem, GameUIController uiController = null)
     {
-        Init(levelDataConfig);
+        ClearBoard();
+        
+        controller = new CardSystemController(cardSystemConfig, scoreSystem, cardHolder, this, uiController);
+        controller.GenerateCards(levelDataConfig);
+        controller.OnGameCompleted += OnGameCompleted;
     }
 
-    public void Init(LevelDataConfig levelDataConfig)
+    void ClearBoard()
     {
-        controller = new CardSystemController(cardSystemConfig, cardHolder, this);
-        controller.GenerateCards(levelDataConfig);
+        if (controller != null)
+        {
+            controller.Cleanup();
+        }
+
+        if (cardHolder != null)
+        {
+            foreach (Transform child in cardHolder)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
+
+    void OnGameCompleted()
+    {
+        Debug.Log("Game Completed! Congratulations!");
     }
 
     void OnDestroy()
     {
-        controller?.Cleanup();
+        if (controller != null)
+        {
+            controller.OnGameCompleted -= OnGameCompleted;
+            controller.Cleanup();
+        }
     }
 }
+

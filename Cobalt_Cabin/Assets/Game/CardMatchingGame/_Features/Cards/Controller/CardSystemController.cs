@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class CardSystemController
 {
@@ -8,6 +9,8 @@ public class CardSystemController
     private LevelDataConfig _levelDataConfig;
     private Transform _boardTransform;
     private MonoBehaviour _coroutineRunner;
+    private GameScoreSystem _scoreSystem;
+    private GameUIController _uiController;
     
     private Card[] _cardsOnBoard;
     public Card[] CardsOnBoard => _cardsOnBoard;
@@ -18,17 +21,24 @@ public class CardSystemController
     private bool _isCheckingMatch = false;
     private int _matchedPairs = 0;
 
-    public CardSystemController(CardSystemConfig cardSystemConfig, Transform boardTransform = null, MonoBehaviour coroutineRunner = null)
+    public event Action OnGameCompleted;
+
+    public CardSystemController(CardSystemConfig cardSystemConfig, GameScoreSystem scoreSystem, Transform boardTransform = null, MonoBehaviour coroutineRunner = null, GameUIController uiController = null)
     {
         _cardSystemConfig = cardSystemConfig;
         _boardTransform = boardTransform;
         _coroutineRunner = coroutineRunner;
+        _scoreSystem = scoreSystem;
+        _uiController = uiController;
     }
     
     public void GenerateCards(LevelDataConfig levelData)
     {
         var _cardFactory = new CardFactory(_cardSystemConfig, _boardTransform);
         _cardsOnBoard = _cardFactory.CreateCards(levelData);
+
+        int totalPairs = _cardsOnBoard.Length / 2;
+        _scoreSystem.SetTotalMatchesInLevel(totalPairs);
 
         SetCardPositions(_cardsOnBoard, levelData);
         SubscribeToCards(_cardsOnBoard);
@@ -83,6 +93,7 @@ public class CardSystemController
 
         if (ActiveCards.Count == MAX_ACTIVE_CARDS)
         {
+            _scoreSystem.RecordTurn();
             _coroutineRunner.StartCoroutine(CheckMatch());
         }
     }
@@ -102,17 +113,32 @@ public class CardSystemController
             secondCard.SetMatched();
             _matchedPairs++;
 
+            _scoreSystem.RecordMatch();
+            
+            if (_uiController != null)
+            {
+                _uiController.UpdateComboDisplay(_scoreSystem.ConsecutiveMatches);
+            }
+
             Debug.Log($"Match! Type: {firstCard.CardType}. Total matches: {_matchedPairs}");
 
             if (_matchedPairs == _cardsOnBoard.Length / 2)
             {
                 Debug.Log("All pairs matched! Game completed!");
+                OnGameCompleted?.Invoke();
             }
         }
         else
         {
             firstCard.Hide();
             secondCard.Hide();
+            _scoreSystem.RecordMismatch();
+            
+            if (_uiController != null)
+            {
+                _uiController.UpdateComboDisplay(0);
+            }
+            
             Debug.Log($"No match. {firstCard.CardType} != {secondCard.CardType}");
         }
 
@@ -134,3 +160,4 @@ public class CardSystemController
         }
     }
 }
+
