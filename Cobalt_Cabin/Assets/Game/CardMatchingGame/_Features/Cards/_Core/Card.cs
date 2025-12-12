@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class Card : MonoBehaviour
@@ -17,8 +18,11 @@ public class Card : MonoBehaviour
     public bool IsRevealed => _isRevealed;
     
     private bool _isFlipping = false;
-    private Coroutine _flipCoroutine;
+    private bool _isMatched = false;
     private BoxCollider2D _collider;
+    private Coroutine _flipCoroutine;
+
+    public event Action<Card> OnCardRevealed;
 
     void Awake()
     {
@@ -50,7 +54,7 @@ public class Card : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (!_isFlipping)
+        if (!_isFlipping && !_isMatched && !_isRevealed)
         {
             OnCardClicked();
         }
@@ -58,15 +62,12 @@ public class Card : MonoBehaviour
 
     void OnCardClicked()
     {
-        if (!_isRevealed)
-        {
-            Reveal();
-        }
+        Reveal();
     }
 
-    public void Reveal()
+    void Reveal()
     {
-        if (_isFlipping || _isRevealed)
+        if (_isFlipping || _isRevealed || _isMatched)
             return;
 
         _isRevealed = true;
@@ -81,7 +82,7 @@ public class Card : MonoBehaviour
 
     public void Hide()
     {
-        if (_isFlipping || !_isRevealed)
+        if (_isFlipping || !_isRevealed || _isMatched)
             return;
 
         _isRevealed = false;
@@ -92,6 +93,12 @@ public class Card : MonoBehaviour
         }
         
         _flipCoroutine = StartCoroutine(FlipCard(false));
+    }
+
+    public void SetMatched()
+    {
+        _isMatched = true;
+        _collider.enabled = false;
     }
 
     IEnumerator FlipCard(bool showFront)
@@ -124,5 +131,10 @@ public class Card : MonoBehaviour
         BackSpriteRenderer.enabled = !showFront;
 
         _isFlipping = false;
+
+        if (showFront)
+        {
+            OnCardRevealed?.Invoke(this);
+        }
     }
 }

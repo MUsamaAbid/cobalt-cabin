@@ -11,14 +11,20 @@ public class BoardSystem : MonoBehaviour
     CardSystemController controller;
 
     [SerializeField] LevelDataConfig levelDataConfig;
-    private void Start()
+    
+    void Start()
     {
         Init(levelDataConfig);
     }
 
     public void Init(LevelDataConfig levelDataConfig)
     {
-        controller = new CardSystemController(cardSystemConfig, cardHolder);
+        controller = new CardSystemController(cardSystemConfig, cardHolder, this);
         controller.GenerateCards(levelDataConfig);
+    }
+
+    void OnDestroy()
+    {
+        controller?.Cleanup();
     }
 }

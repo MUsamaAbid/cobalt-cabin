@@ -7,16 +7,22 @@ public class CardSystemController
     private CardSystemConfig _cardSystemConfig;
     private LevelDataConfig _levelDataConfig;
     private Transform _boardTransform;
+    private MonoBehaviour _coroutineRunner;
     
     private Card[] _cardsOnBoard;
     public Card[] CardsOnBoard => _cardsOnBoard;
 
     public List<Card> ActiveCards { get; private set; } = new List<Card>();
 
-    public CardSystemController(CardSystemConfig cardSystemConfig, Transform boardTransform = null)
+    private const int MAX_ACTIVE_CARDS = 2;
+    private bool _isCheckingMatch = false;
+    private int _matchedPairs = 0;
+
+    public CardSystemController(CardSystemConfig cardSystemConfig, Transform boardTransform = null, MonoBehaviour coroutineRunner = null)
     {
         _cardSystemConfig = cardSystemConfig;
         _boardTransform = boardTransform;
+        _coroutineRunner = coroutineRunner;
     }
     
     public void GenerateCards(LevelDataConfig levelData)
@@ -25,6 +31,15 @@ public class CardSystemController
         _cardsOnBoard = _cardFactory.CreateCards(levelData);
 
         SetCardPositions(_cardsOnBoard, levelData);
+        SubscribeToCards(_cardsOnBoard);
+    }
+
+    void SubscribeToCards(Card[] cards)
+    {
+        foreach (Card card in cards)
+        {
+            card.OnCardRevealed += OnCardRevealed;
+        }
     }
 
     void SetCardPositions(Card[] cardsOnBoard, LevelDataConfig levelData)
@@ -56,17 +71,66 @@ public class CardSystemController
         }
     }
 
-    public void AddActiveCard(Card card)
+    void OnCardRevealed(Card card)
     {
+        if (_isCheckingMatch)
+            return;
+
+        if (ActiveCards.Count >= MAX_ACTIVE_CARDS)
+            return;
+
         ActiveCards.Add(card);
+
+        if (ActiveCards.Count == MAX_ACTIVE_CARDS)
+        {
+            _coroutineRunner.StartCoroutine(CheckMatch());
+        }
     }
 
-    public void RemoveActiveCard(Card card)
+    IEnumerator CheckMatch()
     {
-        ActiveCards.Remove(card);
-    }
-    public void ResetActiveCards(Card card)
-    {
+        _isCheckingMatch = true;
+
+        yield return new WaitForSeconds(0.5f);
+
+        Card firstCard = ActiveCards[0];
+        Card secondCard = ActiveCards[1];
+
+        if (firstCard.CardType == secondCard.CardType)
+        {
+            firstCard.SetMatched();
+            secondCard.SetMatched();
+            _matchedPairs++;
+
+            Debug.Log($"Match! Type: {firstCard.CardType}. Total matches: {_matchedPairs}");
+
+            if (_matchedPairs == _cardsOnBoard.Length / 2)
+            {
+                Debug.Log("All pairs matched! Game completed!");
+            }
+        }
+        else
+        {
+            firstCard.Hide();
+            secondCard.Hide();
+            Debug.Log($"No match. {firstCard.CardType} != {secondCard.CardType}");
+        }
+
         ActiveCards.Clear();
+        _isCheckingMatch = false;
+    }
+
+    public void Cleanup()
+    {
+        if (_cardsOnBoard != null)
+        {
+            foreach (Card card in _cardsOnBoard)
+            {
+                if (card != null)
+                {
+                    card.OnCardRevealed -= OnCardRevealed;
+                }
+            }
+        }
     }
 }
