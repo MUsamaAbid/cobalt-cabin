@@ -2898,13 +2898,7 @@ MonoBehaviour:
   restartButton: {fileID: 1545940504}
   levelWinPanel: {fileID: 4192535429234638797}
   levelFailPanel: {fileID: 442075416763242890}
-  winScoreText: {fileID: 0}
-  winTurnsText: {fileID: 0}
   nextLevelButton: {fileID: 7136045437730155443}
-  winRestartButton: {fileID: 0}
-  failMessageText: {fileID: 0}
-  failScoreText: {fileID: 0}
-  failRestartButton: {fileID: 0}
   pausePanel: {fileID: 240055290}
   pauseButton: {fileID: 767826217}
   resumeButton: {fileID: 264428514}

@@ -19,16 +19,8 @@ public class GameUIController : MonoBehaviour
     [SerializeField] private GameObject levelFailPanel;
 
     [Header("Win Panel UI")]
-    [SerializeField] private TextMeshProUGUI winScoreText;
-    [SerializeField] private TextMeshProUGUI winTurnsText;
     [SerializeField] private Button nextLevelButton;
-    [SerializeField] private Button winRestartButton;
-
-    [Header("Fail Panel UI")]
-    [SerializeField] private TextMeshProUGUI failMessageText;
-    [SerializeField] private TextMeshProUGUI failScoreText;
-    [SerializeField] private Button failRestartButton;
-
+    
     [Header("Pause Panel")]
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private Button pauseButton;
@@ -64,17 +56,7 @@ public class GameUIController : MonoBehaviour
         {
             nextLevelButton.onClick.AddListener(OnNextLevelClicked);
         }
-
-        if (winRestartButton != null)
-        {
-            winRestartButton.onClick.AddListener(OnWinRestartClicked);
-        }
-
-        if (failRestartButton != null)
-        {
-            failRestartButton.onClick.AddListener(OnFailRestartClicked);
-        }
-
+        
         if (pauseButton != null)
         {
             pauseButton.onClick.AddListener(OnPauseClicked);
@@ -263,16 +245,6 @@ public class GameUIController : MonoBehaviour
 
         levelWinPanel.SetActive(true);
 
-        if (winScoreText != null)
-        {
-            winScoreText.text = $"Final Score: {finalScore}";
-        }
-
-        if (winTurnsText != null)
-        {
-            winTurnsText.text = $"Total Turns: {totalTurns}";
-        }
-
         Debug.Log($"Level Win! Score: {finalScore}, Turns: {totalTurns}");
     }
 
@@ -285,16 +257,6 @@ public class GameUIController : MonoBehaviour
         }
 
         levelFailPanel.SetActive(true);
-
-        if (failMessageText != null)
-        {
-            failMessageText.text = failMessage;
-        }
-
-        if (failScoreText != null)
-        {
-            failScoreText.text = $"Score: {currentScore}";
-        }
 
         Debug.Log($"Level Failed! {failMessage}");
     }
@@ -342,16 +304,6 @@ public class GameUIController : MonoBehaviour
         if (nextLevelButton != null)
         {
             nextLevelButton.onClick.RemoveListener(OnNextLevelClicked);
-        }
-
-        if (winRestartButton != null)
-        {
-            winRestartButton.onClick.RemoveListener(OnWinRestartClicked);
-        }
-
-        if (failRestartButton != null)
-        {
-            failRestartButton.onClick.RemoveListener(OnFailRestartClicked);
         }
 
         if (pauseButton != null)

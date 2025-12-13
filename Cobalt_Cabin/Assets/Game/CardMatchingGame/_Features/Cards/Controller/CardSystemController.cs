@@ -43,7 +43,6 @@ public class CardSystemController
 
         int totalPairs = _cardsOnBoard.Length / 2;
         _scoreSystem.SetTotalMatchesInLevel(totalPairs);
-        _scoreSystem.SetLevelConstraints(levelData.restrainedLevel, levelData.maxTurnCount);
 
         SetCardPositions(_cardsOnBoard, levelData);
         SubscribeToCards(_cardsOnBoard);
@@ -57,7 +56,6 @@ public class CardSystemController
 
         int totalPairs = _cardsOnBoard.Length / 2;
         _scoreSystem.SetTotalMatchesInLevel(totalPairs);
-        _scoreSystem.SetLevelConstraints(levelData.restrainedLevel, levelData.maxTurnCount);
 
         SetCardPositions(_cardsOnBoard, levelData);
         SubscribeToCards(_cardsOnBoard);
@@ -71,6 +69,8 @@ public class CardSystemController
         bool wasCheckingMatch = _isCheckingMatch;
         _isCheckingMatch = true;
 
+        int matchedCardsCount = 0;
+
         foreach (CardSaveData cardSaveData in cardSaveDataList)
         {
             if (cardSaveData.cardIndex >= 0 && cardSaveData.cardIndex < _cardsOnBoard.Length)
@@ -81,7 +81,7 @@ public class CardSystemController
                 {
                     card.RevealImmediate();
                     card.SetMatched();
-                    _matchedPairs++;
+                    matchedCardsCount++;
                 }
                 else if (cardSaveData.isRevealed)
                 {
@@ -90,6 +90,8 @@ public class CardSystemController
             }
         }
 
+        _matchedPairs = matchedCardsCount / 2;
+
         _isCheckingMatch = wasCheckingMatch;
 
         if (_uiController != null)
@@ -97,7 +99,7 @@ public class CardSystemController
             _uiController.UpdateComboDisplay(_scoreSystem.ConsecutiveMatches);
         }
 
-        Debug.Log($"RestoreCardStates complete: {_matchedPairs}/{_cardsOnBoard.Length / 2} pairs matched");
+        Debug.Log($"RestoreCardStates complete: {_matchedPairs}/{_cardsOnBoard.Length / 2} pairs matched (from {matchedCardsCount} matched cards)");
 
         if (_matchedPairs == _cardsOnBoard.Length / 2)
         {

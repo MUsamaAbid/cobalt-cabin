@@ -10,9 +10,4 @@ public class LevelDataConfig : ScriptableObject
     
       [Tooltip("These are the only card types that will be involved in the distribution of cards")]
       public List<CardType> cardTypes;
-
-      [Header("Retraining level")]
-      [Tooltip("Works only if the 'check' is set to 'true'")]
-      public bool restrainedLevel = false;
-      public int maxTurnCount = 1;
 }
