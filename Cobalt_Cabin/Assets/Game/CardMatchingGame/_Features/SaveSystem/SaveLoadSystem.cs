@@ -10,7 +10,7 @@ public class SaveLoadSystem
         PlayerPrefs.SetString(SAVE_KEY, json);
         PlayerPrefs.Save();
         
-        Debug.Log($"Game Saved! Score: {saveData.score}, Turns: {saveData.turnCount}, Matches: {saveData.matchesFound}");
+        Debug.Log($"[SaveLoadSystem] Game Saved! Level: {saveData.currentLevelIndex}, Score: {saveData.score}, Turns: {saveData.turnCount}, Matches: {saveData.matchesFound}/{saveData.cards?.Count ?? 0} cards");
     }
 
     public GameSaveData LoadGame()
@@ -20,11 +20,11 @@ public class SaveLoadSystem
             string json = PlayerPrefs.GetString(SAVE_KEY);
             GameSaveData saveData = JsonUtility.FromJson<GameSaveData>(json);
             
-            Debug.Log($"Game Loaded! Score: {saveData.score}, Turns: {saveData.turnCount}, Matches: {saveData.matchesFound}");
+            Debug.Log($"[SaveLoadSystem] Game Loaded! Level: {saveData.currentLevelIndex}, Score: {saveData.score}, Turns: {saveData.turnCount}, Matches: {saveData.matchesFound}/{saveData.cards?.Count ?? 0} cards");
             return saveData;
         }
         
-        Debug.Log("No save data found.");
+        Debug.Log("[SaveLoadSystem] No save data found.");
         return null;
     }
 
@@ -39,7 +39,11 @@ public class SaveLoadSystem
         {
             PlayerPrefs.DeleteKey(SAVE_KEY);
             PlayerPrefs.Save();
-            Debug.Log("Save data deleted.");
+            Debug.Log("[SaveLoadSystem] Save data deleted.");
+        }
+        else
+        {
+            Debug.Log("[SaveLoadSystem] No save data to delete.");
         }
     }
 }

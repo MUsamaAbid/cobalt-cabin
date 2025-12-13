@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
 
     private GameScoreSystem _scoreSystem;
     private SaveLoadSystem _saveLoadSystem;
+    private bool _justRestarted = false;
 
     void Start()
     {
@@ -142,6 +143,12 @@ public class GameManager : MonoBehaviour
 
     public void SaveGame()
     {
+        if (_justRestarted)
+        {
+            Debug.Log("[GameManager] Not saving - game was just restarted. Make progress first!");
+            return;
+        }
+
         if (_scoreSystem == null || boardSystem == null || boardSystem.CardController == null)
             return;
 
@@ -158,9 +165,13 @@ public class GameManager : MonoBehaviour
 
     public void OnRestartGame()
     {
-        Debug.Log("Restarting level...");
+        Debug.Log("[GameManager] Restarting level...");
         
         _saveLoadSystem.DeleteSave();
+        Debug.Log("[GameManager] Save deleted before restart");
+        
+        _justRestarted = true;
+        Debug.Log("[GameManager] Just restarted - will not auto-save until progress is made");
         
         if (boardSystem != null)
         {
@@ -183,6 +194,7 @@ public class GameManager : MonoBehaviour
         }
 
         StartNewGame();
+        Debug.Log("[GameManager] Restart complete - fresh game started");
     }
 
     public void OnNextLevel()
@@ -254,7 +266,12 @@ public class GameManager : MonoBehaviour
     {
         if (autoSaveOnPause)
         {
+            Debug.Log("[GameManager] OnApplicationQuit - Saving game before quit");
             SaveGame();
+        }
+        else
+        {
+            Debug.Log("[GameManager] OnApplicationQuit - Auto-save disabled, not saving");
         }
     }
 
