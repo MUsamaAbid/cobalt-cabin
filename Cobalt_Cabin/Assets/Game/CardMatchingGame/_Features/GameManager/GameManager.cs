@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BoardSystem boardSystem;
     [SerializeField] private GameUIController uiController;
     [SerializeField] private AudioManager audioManager;
+    [SerializeField] private DynamicCameraController cameraController;
 
     [Header("Level Configuration")]
     [SerializeField] private LevelDataConfig levelDataConfig;
@@ -51,6 +52,11 @@ public class GameManager : MonoBehaviour
             _currentLevelPath = GetAssetPath(levelDataConfig);
             boardSystem.Init(levelDataConfig, _scoreSystem, uiController, audioManager);
             boardSystem.OnGameCompletedEvent += OnLevelCompleted;
+            
+            if (cameraController != null)
+            {
+                cameraController.AdjustCameraToGrid(levelDataConfig.rows, levelDataConfig.columns);
+            }
         }
     }
 
@@ -87,6 +93,11 @@ public class GameManager : MonoBehaviour
         {
             boardSystem.Init(savedLevel, _scoreSystem, uiController, audioManager);
             boardSystem.OnGameCompletedEvent += OnLevelCompleted;
+            
+            if (cameraController != null)
+            {
+                cameraController.AdjustCameraToGrid(savedLevel.rows, savedLevel.columns);
+            }
         }
 
         _scoreSystem.LoadFromSave(saveData);
@@ -165,5 +176,10 @@ public class GameManager : MonoBehaviour
             return string.Empty;
 
         return asset.name;
+    }
+
+    public LevelDataConfig GetCurrentLevelData()
+    {
+        return levelDataConfig;
     }
 }

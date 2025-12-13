@@ -9,11 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a634e270812b64d158d4d1a7ec33cf08, type: 3}
-  m_Name: LevelDataConfig
+  m_Script: {fileID: 11500000, guid: 230693a452d054dca925affc27bb6ac7, type: 3}
+  m_Name: Camera Config
   m_EditorClassIdentifier: 
-  columns: 2
-  rows: 4
-  cardTypes: 00000000010000000200000003000000
-  restrainedLevel: 0
-  maxTurnCount: 1
+  topPadding: 1
+  bottomPadding: 1
+  leftPadding: 1
+  rightPadding: 1
+  cardWidth: 2
+  cardHeight: 2.5
+  cardSpacing: 2.5
