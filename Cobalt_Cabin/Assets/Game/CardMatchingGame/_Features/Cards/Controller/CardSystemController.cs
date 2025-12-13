@@ -14,6 +14,7 @@ public class CardSystemController
     
     private Card[] _cardsOnBoard;
     public Card[] CardsOnBoard => _cardsOnBoard;
+    public LevelDataConfig CurrentLevelData => _levelDataConfig;
 
     public List<Card> ActiveCards { get; private set; } = new List<Card>();
 
@@ -34,6 +35,7 @@ public class CardSystemController
     
     public void GenerateCards(LevelDataConfig levelData)
     {
+        _levelDataConfig = levelData;
         var _cardFactory = new CardFactory(_cardSystemConfig, _boardTransform);
         _cardsOnBoard = _cardFactory.CreateCards(levelData);
 
@@ -42,6 +44,36 @@ public class CardSystemController
 
         SetCardPositions(_cardsOnBoard, levelData);
         SubscribeToCards(_cardsOnBoard);
+    }
+
+    public void RestoreCardStates(List<CardSaveData> cardSaveDataList)
+    {
+        if (_cardsOnBoard == null || cardSaveDataList == null)
+            return;
+
+        foreach (CardSaveData cardSaveData in cardSaveDataList)
+        {
+            if (cardSaveData.cardIndex >= 0 && cardSaveData.cardIndex < _cardsOnBoard.Length)
+            {
+                Card card = _cardsOnBoard[cardSaveData.cardIndex];
+                
+                if (cardSaveData.isMatched)
+                {
+                    card.Reveal();
+                    card.SetMatched();
+                    _matchedPairs++;
+                }
+                else if (cardSaveData.isRevealed)
+                {
+                    card.Reveal();
+                }
+            }
+        }
+
+        if (_uiController != null)
+        {
+            _uiController.UpdateComboDisplay(_scoreSystem.ConsecutiveMatches);
+        }
     }
 
     void SubscribeToCards(Card[] cards)

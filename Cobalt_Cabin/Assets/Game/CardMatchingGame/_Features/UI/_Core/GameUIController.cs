@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using System;
 
 public class GameUIController : MonoBehaviour
 {
@@ -8,8 +10,21 @@ public class GameUIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI turnCountText;
     [SerializeField] private TextMeshProUGUI matchesText;
     [SerializeField] private TextMeshProUGUI comboText;
+    
+    [Header("Button References")]
+    [SerializeField] private Button restartButton;
 
     private GameScoreSystem _scoreSystem;
+    
+    public event Action OnRestartButtonClicked;
+
+    void Awake()
+    {
+        if (restartButton != null)
+        {
+            restartButton.onClick.AddListener(OnRestartClicked);
+        }
+    }
 
     public void Init(GameScoreSystem scoreSystem)
     {
@@ -65,6 +80,11 @@ public class GameUIController : MonoBehaviour
         }
     }
 
+    void OnRestartClicked()
+    {
+        OnRestartButtonClicked?.Invoke();
+    }
+
     void OnDestroy()
     {
         if (_scoreSystem != null)
@@ -72,6 +92,11 @@ public class GameUIController : MonoBehaviour
             _scoreSystem.OnScoreChanged -= UpdateScoreDisplay;
             _scoreSystem.OnTurnCountChanged -= UpdateTurnCountDisplay;
             _scoreSystem.OnMatchesChanged -= UpdateMatchesDisplay;
+        }
+
+        if (restartButton != null)
+        {
+            restartButton.onClick.RemoveListener(OnRestartClicked);
         }
     }
 }

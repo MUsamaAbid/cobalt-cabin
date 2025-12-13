@@ -19,6 +19,7 @@ public class Card : MonoBehaviour
     
     private bool _isFlipping = false;
     private bool _isMatched = false;
+    public bool IsMatched => _isMatched;
     private BoxCollider2D _collider;
     private Coroutine _flipCoroutine;
 
@@ -65,7 +66,7 @@ public class Card : MonoBehaviour
         Reveal();
     }
 
-    void Reveal()
+    public void Reveal()
     {
         if (_isFlipping || _isRevealed || _isMatched)
             return;

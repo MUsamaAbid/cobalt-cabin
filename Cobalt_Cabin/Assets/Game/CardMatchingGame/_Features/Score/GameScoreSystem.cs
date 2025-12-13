@@ -67,4 +67,47 @@ public class GameScoreSystem
         OnTurnCountChanged?.Invoke(_turnCount);
         OnMatchesChanged?.Invoke(_matchesFound, _totalMatchesInLevel);
     }
+
+    public void LoadFromSave(GameSaveData saveData)
+    {
+        _score = saveData.score;
+        _turnCount = saveData.turnCount;
+        _matchesFound = saveData.matchesFound;
+        _consecutiveMatches = saveData.consecutiveMatches;
+        
+        OnScoreChanged?.Invoke(_score);
+        OnTurnCountChanged?.Invoke(_turnCount);
+        OnMatchesChanged?.Invoke(_matchesFound, _totalMatchesInLevel);
+    }
+
+    public GameSaveData CreateSaveData(string levelConfigPath, Card[] cards)
+    {
+        GameSaveData saveData = new GameSaveData
+        {
+            score = _score,
+            turnCount = _turnCount,
+            matchesFound = _matchesFound,
+            consecutiveMatches = _consecutiveMatches,
+            levelConfigPath = levelConfigPath
+        };
+
+        if (cards != null)
+        {
+            for (int i = 0; i < cards.Length; i++)
+            {
+                if (cards[i] != null)
+                {
+                    saveData.cards.Add(new CardSaveData
+                    {
+                        cardIndex = i,
+                        cardType = cards[i].CardType,
+                        isMatched = cards[i].IsMatched,
+                        isRevealed = cards[i].IsRevealed
+                    });
+                }
+            }
+        }
+
+        return saveData;
+    }
 }

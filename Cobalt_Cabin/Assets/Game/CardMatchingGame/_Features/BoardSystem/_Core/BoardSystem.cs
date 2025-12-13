@@ -9,6 +9,9 @@ public class BoardSystem : MonoBehaviour
     [SerializeField] Transform cardHolder;
     
     CardSystemController controller;
+    public CardSystemController CardController => controller;
+
+    public event Action OnGameCompletedEvent;
 
     public void Init(LevelDataConfig levelDataConfig, GameScoreSystem scoreSystem, GameUIController uiController = null)
     {
@@ -24,6 +27,7 @@ public class BoardSystem : MonoBehaviour
         if (controller != null)
         {
             controller.Cleanup();
+            controller.OnGameCompleted -= OnGameCompleted;
         }
 
         if (cardHolder != null)
@@ -38,6 +42,7 @@ public class BoardSystem : MonoBehaviour
     void OnGameCompleted()
     {
         Debug.Log("Game Completed! Congratulations!");
+        OnGameCompletedEvent?.Invoke();
     }
 
     void OnDestroy()
