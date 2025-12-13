@@ -20,6 +20,7 @@ public class Card : MonoBehaviour
     private bool _isFlipping = false;
     private bool _isMatched = false;
     public bool IsMatched => _isMatched;
+    private bool _inputEnabled = true;
     private BoxCollider2D _collider;
     private Coroutine _flipCoroutine;
 
@@ -55,15 +56,22 @@ public class Card : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (!_isFlipping && !_isMatched && !_isRevealed)
+        if (!_inputEnabled || _isFlipping || _isMatched || _isRevealed)
         {
-            OnCardClicked();
+            return;
         }
+        
+        OnCardClicked();
     }
 
     void OnCardClicked()
     {
         Reveal();
+    }
+
+    public void SetInputEnabled(bool enabled)
+    {
+        _inputEnabled = enabled;
     }
 
     public void Reveal()

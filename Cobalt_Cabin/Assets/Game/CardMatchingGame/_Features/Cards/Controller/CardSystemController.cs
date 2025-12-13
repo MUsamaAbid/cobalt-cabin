@@ -118,6 +118,9 @@ public class CardSystemController
         if (_isCheckingMatch)
             return;
 
+        if (ActiveCards.Contains(card))
+            return;
+
         if (ActiveCards.Count >= MAX_ACTIVE_CARDS)
             return;
 
@@ -125,15 +128,43 @@ public class CardSystemController
 
         if (ActiveCards.Count == MAX_ACTIVE_CARDS)
         {
+            _isCheckingMatch = true;
             _scoreSystem.RecordTurn();
+            DisableAllCardInput();
             _coroutineRunner.StartCoroutine(CheckMatch());
+        }
+    }
+
+    void DisableAllCardInput()
+    {
+        if (_cardsOnBoard == null)
+            return;
+
+        foreach (Card card in _cardsOnBoard)
+        {
+            if (card != null && !card.IsMatched)
+            {
+                card.SetInputEnabled(false);
+            }
+        }
+    }
+
+    void EnableUnmatchedCardInput()
+    {
+        if (_cardsOnBoard == null)
+            return;
+
+        foreach (Card card in _cardsOnBoard)
+        {
+            if (card != null && !card.IsMatched)
+            {
+                card.SetInputEnabled(true);
+            }
         }
     }
 
     IEnumerator CheckMatch()
     {
-        _isCheckingMatch = true;
-
         yield return new WaitForSeconds(0.5f);
 
         Card firstCard = ActiveCards[0];
@@ -176,6 +207,7 @@ public class CardSystemController
 
         ActiveCards.Clear();
         _isCheckingMatch = false;
+        EnableUnmatchedCardInput();
     }
 
     public void Cleanup()
