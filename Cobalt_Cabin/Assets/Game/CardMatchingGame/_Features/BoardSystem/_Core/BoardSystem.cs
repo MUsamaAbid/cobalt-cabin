@@ -13,11 +13,11 @@ public class BoardSystem : MonoBehaviour
 
     public event Action OnGameCompletedEvent;
 
-    public void Init(LevelDataConfig levelDataConfig, GameScoreSystem scoreSystem, GameUIController uiController = null)
+    public void Init(LevelDataConfig levelDataConfig, GameScoreSystem scoreSystem, GameUIController uiController = null, AudioManager audioManager = null)
     {
         ClearBoard();
         
-        controller = new CardSystemController(cardSystemConfig, scoreSystem, cardHolder, this, uiController);
+        controller = new CardSystemController(cardSystemConfig, scoreSystem, cardHolder, this, uiController, audioManager);
         controller.GenerateCards(levelDataConfig);
         controller.OnGameCompleted += OnGameCompleted;
     }

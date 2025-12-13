@@ -25,6 +25,7 @@ public class Card : MonoBehaviour
     private Coroutine _flipCoroutine;
 
     public event Action<Card> OnCardRevealed;
+    public event Action OnCardFlippedByPlayer;
 
     void Awake()
     {
@@ -66,6 +67,7 @@ public class Card : MonoBehaviour
 
     void OnCardClicked()
     {
+        OnCardFlippedByPlayer?.Invoke();
         Reveal();
     }
 

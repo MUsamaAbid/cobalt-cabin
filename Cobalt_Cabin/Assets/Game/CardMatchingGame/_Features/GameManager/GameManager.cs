@@ -5,6 +5,7 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private BoardSystem boardSystem;
     [SerializeField] private GameUIController uiController;
+    [SerializeField] private AudioManager audioManager;
 
     [Header("Level Configuration")]
     [SerializeField] private LevelDataConfig levelDataConfig;
@@ -48,7 +49,7 @@ public class GameManager : MonoBehaviour
         if (boardSystem != null && levelDataConfig != null)
         {
             _currentLevelPath = GetAssetPath(levelDataConfig);
-            boardSystem.Init(levelDataConfig, _scoreSystem, uiController);
+            boardSystem.Init(levelDataConfig, _scoreSystem, uiController, audioManager);
             boardSystem.OnGameCompletedEvent += OnLevelCompleted;
         }
     }
@@ -84,7 +85,7 @@ public class GameManager : MonoBehaviour
 
         if (boardSystem != null)
         {
-            boardSystem.Init(savedLevel, _scoreSystem, uiController);
+            boardSystem.Init(savedLevel, _scoreSystem, uiController, audioManager);
             boardSystem.OnGameCompletedEvent += OnLevelCompleted;
         }
 

@@ -11,6 +11,7 @@ public class CardSystemController
     private MonoBehaviour _coroutineRunner;
     private GameScoreSystem _scoreSystem;
     private GameUIController _uiController;
+    private AudioManager _audioManager;
     
     private Card[] _cardsOnBoard;
     public Card[] CardsOnBoard => _cardsOnBoard;
@@ -24,13 +25,14 @@ public class CardSystemController
 
     public event Action OnGameCompleted;
 
-    public CardSystemController(CardSystemConfig cardSystemConfig, GameScoreSystem scoreSystem, Transform boardTransform = null, MonoBehaviour coroutineRunner = null, GameUIController uiController = null)
+    public CardSystemController(CardSystemConfig cardSystemConfig, GameScoreSystem scoreSystem, Transform boardTransform = null, MonoBehaviour coroutineRunner = null, GameUIController uiController = null, AudioManager audioManager = null)
     {
         _cardSystemConfig = cardSystemConfig;
         _boardTransform = boardTransform;
         _coroutineRunner = coroutineRunner;
         _scoreSystem = scoreSystem;
         _uiController = uiController;
+        _audioManager = audioManager;
     }
     
     public void GenerateCards(LevelDataConfig levelData)
@@ -81,6 +83,15 @@ public class CardSystemController
         foreach (Card card in cards)
         {
             card.OnCardRevealed += OnCardRevealed;
+            card.OnCardFlippedByPlayer += OnCardFlippedByPlayer;
+        }
+    }
+
+    void OnCardFlippedByPlayer()
+    {
+        if (_audioManager != null)
+        {
+            _audioManager.PlayCardFlip();
         }
     }
 
@@ -178,6 +189,11 @@ public class CardSystemController
 
             _scoreSystem.RecordMatch();
             
+            if (_audioManager != null)
+            {
+                _audioManager.PlayMatch();
+            }
+            
             if (_uiController != null)
             {
                 _uiController.UpdateComboDisplay(_scoreSystem.ConsecutiveMatches);
@@ -188,6 +204,12 @@ public class CardSystemController
             if (_matchedPairs == _cardsOnBoard.Length / 2)
             {
                 Debug.Log("All pairs matched! Game completed!");
+                
+                if (_audioManager != null)
+                {
+                    _audioManager.PlayGameOver();
+                }
+                
                 OnGameCompleted?.Invoke();
             }
         }
@@ -196,6 +218,11 @@ public class CardSystemController
             firstCard.Hide();
             secondCard.Hide();
             _scoreSystem.RecordMismatch();
+            
+            if (_audioManager != null)
+            {
+                _audioManager.PlayMismatch();
+            }
             
             if (_uiController != null)
             {
@@ -219,6 +246,7 @@ public class CardSystemController
                 if (card != null)
                 {
                     card.OnCardRevealed -= OnCardRevealed;
+                    card.OnCardFlippedByPlayer -= OnCardFlippedByPlayer;
                 }
             }
         }
