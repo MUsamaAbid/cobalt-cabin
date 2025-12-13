@@ -50,7 +50,8 @@ public class BoardSystem : MonoBehaviour
 
     void OnGameCompleted()
     {
-        Debug.Log("Game Completed! Congratulations!");
+        Debug.Log("[BoardSystem] Game Completed! Congratulations!");
+        Debug.Log($"[BoardSystem] Invoking OnGameCompletedEvent. Subscribers: {(OnGameCompletedEvent != null ? OnGameCompletedEvent.GetInvocationList().Length : 0)}");
         OnGameCompletedEvent?.Invoke();
     }
 

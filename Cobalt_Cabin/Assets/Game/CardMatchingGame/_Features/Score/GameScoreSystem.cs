@@ -8,6 +8,8 @@ public class GameScoreSystem
     private int _consecutiveMatches = 0;
     private int _matchesFound = 0;
     private int _totalMatchesInLevel = 0;
+    private int _maxTurnCount = -1;
+    private bool _isRestrainedLevel = false;
 
     private const int BASE_MATCH_SCORE = 100;
     private const int COMBO_BONUS = 50;
@@ -17,10 +19,13 @@ public class GameScoreSystem
     public int ConsecutiveMatches => _consecutiveMatches;
     public int MatchesFound => _matchesFound;
     public int TotalMatchesInLevel => _totalMatchesInLevel;
+    public int MaxTurnCount => _maxTurnCount;
+    public bool IsRestrainedLevel => _isRestrainedLevel;
 
     public event Action<int> OnScoreChanged;
     public event Action<int> OnTurnCountChanged;
     public event Action<int, int> OnMatchesChanged;
+    public event Action OnLevelFailed;
 
     public void SetTotalMatchesInLevel(int totalMatches)
     {
@@ -28,10 +33,25 @@ public class GameScoreSystem
         OnMatchesChanged?.Invoke(_matchesFound, _totalMatchesInLevel);
     }
 
+    public void SetLevelConstraints(bool isRestrained, int maxTurns)
+    {
+        _isRestrainedLevel = isRestrained;
+        _maxTurnCount = maxTurns;
+    }
+
     public void RecordTurn()
     {
         _turnCount++;
         OnTurnCountChanged?.Invoke(_turnCount);
+
+        if (_isRestrainedLevel && _maxTurnCount > 0 && _turnCount >= _maxTurnCount)
+        {
+            if (_matchesFound < _totalMatchesInLevel)
+            {
+                Debug.Log($"Level Failed! Exceeded max turns: {_turnCount}/{_maxTurnCount}");
+                OnLevelFailed?.Invoke();
+            }
+        }
     }
 
     public void RecordMatch()
@@ -80,7 +100,7 @@ public class GameScoreSystem
         OnMatchesChanged?.Invoke(_matchesFound, _totalMatchesInLevel);
     }
 
-    public GameSaveData CreateSaveData(string levelConfigPath, Card[] cards)
+    public GameSaveData CreateSaveData(int currentLevelIndex, Card[] cards)
     {
         GameSaveData saveData = new GameSaveData
         {
@@ -88,7 +108,7 @@ public class GameScoreSystem
             turnCount = _turnCount,
             matchesFound = _matchesFound,
             consecutiveMatches = _consecutiveMatches,
-            levelConfigPath = levelConfigPath
+            currentLevelIndex = currentLevelIndex
         };
 
         if (cards != null)

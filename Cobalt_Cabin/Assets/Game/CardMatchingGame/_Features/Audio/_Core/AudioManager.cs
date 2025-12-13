@@ -53,6 +53,15 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    public void PlayButtonClick()
+    {
+        if (audioConfig != null && audioConfig.buttonClickSound != null)
+        {
+            float volume = audioConfig.sfxVolume * audioConfig.buttonClickVolume;
+            _audioSource.PlayOneShot(audioConfig.buttonClickSound, volume);
+        }
+    }
+
     public void SetMasterVolume(float volume)
     {
         if (audioConfig != null)

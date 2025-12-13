@@ -8,8 +8,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private DynamicCameraController cameraController;
 
-    [Header("Level Configuration")]
-    [SerializeField] private LevelDataConfig levelDataConfig;
+    [Header("Level System")]
+    [SerializeField] private LevelSystem levelSystem;
 
     [Header("Save Settings")]
     [SerializeField] private bool autoSaveOnPause = true;
@@ -17,7 +17,6 @@ public class GameManager : MonoBehaviour
 
     private GameScoreSystem _scoreSystem;
     private SaveLoadSystem _saveLoadSystem;
-    private string _currentLevelPath;
 
     void Start()
     {
@@ -35,11 +34,28 @@ public class GameManager : MonoBehaviour
         if (uiController != null)
         {
             uiController.OnRestartButtonClicked += OnRestartGame;
+            uiController.OnWinRestartButtonClicked += OnRestartGame;
+            uiController.OnFailRestartButtonClicked += OnRestartGame;
+            uiController.OnPauseRestartButtonClicked += OnRestartGame;
+            uiController.OnNextLevelButtonClicked += OnNextLevel;
         }
     }
 
     void StartNewGame()
     {
+        if (levelSystem == null)
+        {
+            Debug.LogError("LevelSystem is not assigned!");
+            return;
+        }
+
+        LevelDataConfig currentLevel = levelSystem.GetCurrentLevel();
+        if (currentLevel == null)
+        {
+            Debug.LogError("Failed to get current level!");
+            return;
+        }
+
         _scoreSystem = new GameScoreSystem();
         
         if (uiController != null)
@@ -47,17 +63,23 @@ public class GameManager : MonoBehaviour
             uiController.Init(_scoreSystem);
         }
 
-        if (boardSystem != null && levelDataConfig != null)
+        if (boardSystem != null)
         {
-            _currentLevelPath = GetAssetPath(levelDataConfig);
-            boardSystem.Init(levelDataConfig, _scoreSystem, uiController, audioManager);
+            boardSystem.Init(currentLevel, _scoreSystem, uiController, audioManager);
             boardSystem.OnGameCompletedEvent += OnLevelCompleted;
             
             if (cameraController != null)
             {
-                cameraController.AdjustCameraToGrid(levelDataConfig.rows, levelDataConfig.columns);
+                cameraController.AdjustCameraToGrid(currentLevel.rows, currentLevel.columns);
             }
         }
+
+        if (_scoreSystem != null)
+        {
+            _scoreSystem.OnLevelFailed += OnLevelFailed;
+        }
+
+        Debug.Log($"Started {levelSystem.GetCurrentLevelDisplayName()} | {levelSystem.GetProgressSummary()}");
     }
 
     void LoadGame()
@@ -70,24 +92,27 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (levelSystem == null)
+        {
+            Debug.LogError("LevelSystem is not assigned!");
+            return;
+        }
+
+        LevelDataConfig savedLevel = levelSystem.GetCurrentLevel();
+        
+        if (savedLevel == null)
+        {
+            Debug.LogWarning("Saved level not found. Starting new game.");
+            StartNewGame();
+            return;
+        }
+
         _scoreSystem = new GameScoreSystem();
         
         if (uiController != null)
         {
             uiController.Init(_scoreSystem);
         }
-
-        LevelDataConfig savedLevel = levelDataConfig;
-        if (!string.IsNullOrEmpty(saveData.levelConfigPath))
-        {
-            LevelDataConfig loadedLevel = Resources.Load<LevelDataConfig>(saveData.levelConfigPath);
-            if (loadedLevel != null)
-            {
-                savedLevel = loadedLevel;
-            }
-        }
-
-        _currentLevelPath = GetAssetPath(savedLevel);
 
         if (boardSystem != null)
         {
@@ -107,7 +132,12 @@ public class GameManager : MonoBehaviour
             boardSystem.CardController.RestoreCardStates(saveData.cards);
         }
 
-        Debug.Log("Game loaded successfully!");
+        if (_scoreSystem != null)
+        {
+            _scoreSystem.OnLevelFailed += OnLevelFailed;
+        }
+
+        Debug.Log($"Game loaded! {levelSystem.GetCurrentLevelDisplayName()} | {levelSystem.GetProgressSummary()}");
     }
 
     public void SaveGame()
@@ -115,8 +145,11 @@ public class GameManager : MonoBehaviour
         if (_scoreSystem == null || boardSystem == null || boardSystem.CardController == null)
             return;
 
+        if (levelSystem == null)
+            return;
+
         GameSaveData saveData = _scoreSystem.CreateSaveData(
-            _currentLevelPath,
+            levelSystem.CurrentLevelIndex,
             boardSystem.CardController.CardsOnBoard
         );
 
@@ -125,6 +158,8 @@ public class GameManager : MonoBehaviour
 
     public void OnRestartGame()
     {
+        Debug.Log("Restarting level...");
+        
         _saveLoadSystem.DeleteSave();
         
         if (boardSystem != null)
@@ -132,13 +167,79 @@ public class GameManager : MonoBehaviour
             boardSystem.OnGameCompletedEvent -= OnLevelCompleted;
         }
 
+        if (_scoreSystem != null)
+        {
+            _scoreSystem.OnLevelFailed -= OnLevelFailed;
+        }
+
+        if (uiController != null)
+        {
+            uiController.HideSummaryPanels();
+        }
+
+        if (levelSystem != null)
+        {
+            levelSystem.RestartCurrentLevel();
+        }
+
+        StartNewGame();
+    }
+
+    public void OnNextLevel()
+    {
+        Debug.Log("Loading next level...");
+        
+        _saveLoadSystem.DeleteSave();
+        
+        if (boardSystem != null)
+        {
+            boardSystem.OnGameCompletedEvent -= OnLevelCompleted;
+        }
+
+        if (_scoreSystem != null)
+        {
+            _scoreSystem.OnLevelFailed -= OnLevelFailed;
+        }
+
+        if (uiController != null)
+        {
+            uiController.HideSummaryPanels();
+        }
+
+        if (levelSystem != null)
+        {
+            levelSystem.AdvanceToNextLevel();
+        }
+
         StartNewGame();
     }
 
     void OnLevelCompleted()
     {
-        Debug.Log("Level completed! Deleting save...");
+        Debug.Log($"[GameManager] OnLevelCompleted() called!");
+        Debug.Log($"{levelSystem.GetCurrentLevelDisplayName()} completed!");
         _saveLoadSystem.DeleteSave();
+
+        if (uiController != null && _scoreSystem != null)
+        {
+            Debug.Log($"[GameManager] Showing win panel with Score: {_scoreSystem.Score}, Turns: {_scoreSystem.TurnCount}");
+            uiController.ShowLevelWinPanel(_scoreSystem.Score, _scoreSystem.TurnCount);
+        }
+        else
+        {
+            Debug.LogError($"[GameManager] Cannot show win panel! uiController: {uiController != null}, _scoreSystem: {_scoreSystem != null}");
+        }
+    }
+
+    void OnLevelFailed()
+    {
+        Debug.Log($"{levelSystem.GetCurrentLevelDisplayName()} failed! Maximum turns exceeded.");
+        
+        if (uiController != null && _scoreSystem != null)
+        {
+            string failMessage = $"Out of Turns!\nMax Turns: {_scoreSystem.MaxTurnCount}";
+            uiController.ShowLevelFailPanel(failMessage, _scoreSystem.Score);
+        }
     }
 
     void OnApplicationPause(bool isPaused)
@@ -162,24 +263,30 @@ public class GameManager : MonoBehaviour
         if (uiController != null)
         {
             uiController.OnRestartButtonClicked -= OnRestartGame;
+            uiController.OnWinRestartButtonClicked -= OnRestartGame;
+            uiController.OnFailRestartButtonClicked -= OnRestartGame;
+            uiController.OnPauseRestartButtonClicked -= OnRestartGame;
+            uiController.OnNextLevelButtonClicked -= OnNextLevel;
         }
 
         if (boardSystem != null)
         {
             boardSystem.OnGameCompletedEvent -= OnLevelCompleted;
         }
-    }
 
-    string GetAssetPath(Object asset)
-    {
-        if (asset == null)
-            return string.Empty;
-
-        return asset.name;
+        if (_scoreSystem != null)
+        {
+            _scoreSystem.OnLevelFailed -= OnLevelFailed;
+        }
     }
 
     public LevelDataConfig GetCurrentLevelData()
     {
-        return levelDataConfig;
+        return levelSystem != null ? levelSystem.GetCurrentLevel() : null;
+    }
+
+    public LevelSystem GetLevelSystem()
+    {
+        return levelSystem;
     }
 }

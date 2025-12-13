@@ -43,6 +43,7 @@ public class CardSystemController
 
         int totalPairs = _cardsOnBoard.Length / 2;
         _scoreSystem.SetTotalMatchesInLevel(totalPairs);
+        _scoreSystem.SetLevelConstraints(levelData.restrainedLevel, levelData.maxTurnCount);
 
         SetCardPositions(_cardsOnBoard, levelData);
         SubscribeToCards(_cardsOnBoard);
@@ -56,6 +57,7 @@ public class CardSystemController
 
         int totalPairs = _cardsOnBoard.Length / 2;
         _scoreSystem.SetTotalMatchesInLevel(totalPairs);
+        _scoreSystem.SetLevelConstraints(levelData.restrainedLevel, levelData.maxTurnCount);
 
         SetCardPositions(_cardsOnBoard, levelData);
         SubscribeToCards(_cardsOnBoard);
@@ -93,6 +95,14 @@ public class CardSystemController
         if (_uiController != null)
         {
             _uiController.UpdateComboDisplay(_scoreSystem.ConsecutiveMatches);
+        }
+
+        Debug.Log($"RestoreCardStates complete: {_matchedPairs}/{_cardsOnBoard.Length / 2} pairs matched");
+
+        if (_matchedPairs == _cardsOnBoard.Length / 2)
+        {
+            Debug.Log($"Game was already completed when loaded! Triggering completion event. ({_matchedPairs} == {_cardsOnBoard.Length / 2})");
+            OnGameCompleted?.Invoke();
         }
     }
 
@@ -217,11 +227,11 @@ public class CardSystemController
                 _uiController.UpdateComboDisplay(_scoreSystem.ConsecutiveMatches);
             }
 
-            Debug.Log($"Match! Type: {firstCard.CardType}. Total matches: {_matchedPairs}");
+            Debug.Log($"Match! Type: {firstCard.CardType}. Total matches: {_matchedPairs}/{_cardsOnBoard.Length / 2}");
 
             if (_matchedPairs == _cardsOnBoard.Length / 2)
             {
-                Debug.Log("All pairs matched! Game completed!");
+                Debug.Log($"All pairs matched! Game completed! ({_matchedPairs} == {_cardsOnBoard.Length / 2})");
                 
                 if (_audioManager != null)
                 {
@@ -229,6 +239,10 @@ public class CardSystemController
                 }
                 
                 OnGameCompleted?.Invoke();
+            }
+            else
+            {
+                Debug.Log($"Not complete yet: {_matchedPairs} != {_cardsOnBoard.Length / 2}");
             }
         }
         else

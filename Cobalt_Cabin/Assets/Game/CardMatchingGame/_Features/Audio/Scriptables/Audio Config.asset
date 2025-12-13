@@ -16,8 +16,10 @@ MonoBehaviour:
   matchSound: {fileID: 8300000, guid: 30c2c6f541dbd40f7bc3fd335224c642, type: 3}
   mismatchSound: {fileID: 8300000, guid: 4c98e781bbca14d6a881f5d406df9612, type: 3}
   gameOverSound: {fileID: 8300000, guid: cba97af7fb44f469189bde46890965dc, type: 3}
+  buttonClickSound: {fileID: 8300000, guid: 4030ebc375fec45ec80feabd24309ca8, type: 3}
   sfxVolume: 1
   cardFlipVolume: 0.7
   matchVolume: 0.8
   mismatchVolume: 0.6
   gameOverVolume: 1
+  buttonClickVolume: 0.5

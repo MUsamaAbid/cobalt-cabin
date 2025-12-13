@@ -8,7 +8,7 @@ public class GameSaveData
     public int turnCount;
     public int matchesFound;
     public int consecutiveMatches;
-    public string levelConfigPath;
+    public int currentLevelIndex;
     public List<CardSaveData> cards;
 
     public GameSaveData()

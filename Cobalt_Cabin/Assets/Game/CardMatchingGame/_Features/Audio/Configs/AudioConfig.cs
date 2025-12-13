@@ -18,6 +18,10 @@ public class AudioConfig : ScriptableObject
     [Tooltip("Sound played when level is completed")]
     public AudioClip gameOverSound;
 
+    [Header("UI Sounds")]
+    [Tooltip("Sound played when any UI button is clicked")]
+    public AudioClip buttonClickSound;
+
     [Header("Volume Settings")]
     [Range(0f, 1f)]
     public float sfxVolume = 1f;
@@ -33,4 +37,7 @@ public class AudioConfig : ScriptableObject
 
     [Range(0f, 1f)]
     public float gameOverVolume = 1f;
+
+    [Range(0f, 1f)]
+    public float buttonClickVolume = 0.5f;
 }
