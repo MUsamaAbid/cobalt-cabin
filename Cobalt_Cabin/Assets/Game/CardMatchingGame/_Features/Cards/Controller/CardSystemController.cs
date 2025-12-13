@@ -48,10 +48,26 @@ public class CardSystemController
         SubscribeToCards(_cardsOnBoard);
     }
 
+    public void GenerateCardsFromSave(LevelDataConfig levelData, List<CardSaveData> savedCards)
+    {
+        _levelDataConfig = levelData;
+        var _cardFactory = new CardFactory(_cardSystemConfig, _boardTransform);
+        _cardsOnBoard = _cardFactory.CreateCardsFromSave(savedCards);
+
+        int totalPairs = _cardsOnBoard.Length / 2;
+        _scoreSystem.SetTotalMatchesInLevel(totalPairs);
+
+        SetCardPositions(_cardsOnBoard, levelData);
+        SubscribeToCards(_cardsOnBoard);
+    }
+
     public void RestoreCardStates(List<CardSaveData> cardSaveDataList)
     {
         if (_cardsOnBoard == null || cardSaveDataList == null)
             return;
+
+        bool wasCheckingMatch = _isCheckingMatch;
+        _isCheckingMatch = true;
 
         foreach (CardSaveData cardSaveData in cardSaveDataList)
         {
@@ -61,16 +77,18 @@ public class CardSystemController
                 
                 if (cardSaveData.isMatched)
                 {
-                    card.Reveal();
+                    card.RevealImmediate();
                     card.SetMatched();
                     _matchedPairs++;
                 }
                 else if (cardSaveData.isRevealed)
                 {
-                    card.Reveal();
+                    card.RevealImmediate();
                 }
             }
         }
+
+        _isCheckingMatch = wasCheckingMatch;
 
         if (_uiController != null)
         {

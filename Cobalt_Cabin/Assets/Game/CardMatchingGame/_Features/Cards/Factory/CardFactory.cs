@@ -72,6 +72,45 @@ public class CardFactory
         return cards.ToArray();
     }
 
+    public Card[] CreateCardsFromSave(List<CardSaveData> savedCards)
+    {
+        if (savedCards == null || savedCards.Count == 0)
+        {
+            Debug.LogError("No saved card data provided");
+            return new Card[0];
+        }
+
+        List<Card> cards = new List<Card>();
+
+        foreach (CardSaveData savedCard in savedCards)
+        {
+            GameObject cardObject = Object.Instantiate(_cardSystemConfig.CardPrefab, _parentTransform);
+            Card card = cardObject.GetComponent<Card>();
+            
+            if (card != null)
+            {
+                CardData cardData = GetCardDataByType(savedCard.cardType);
+                if (cardData != null)
+                {
+                    card.Init(savedCard.cardType, cardData.Front, cardData.Back);
+                    cards.Add(card);
+                }
+                else
+                {
+                    Debug.LogError($"No CardData found for saved CardType: {savedCard.cardType}");
+                    Object.Destroy(cardObject);
+                }
+            }
+            else
+            {
+                Debug.LogError("Card prefab does not have a Card component!");
+                Object.Destroy(cardObject);
+            }
+        }
+
+        return cards.ToArray();
+    }
+
     CardData GetCardDataByType(CardType cardType)
     {
         foreach (CardData cardData in _cardSystemConfig.Cards)

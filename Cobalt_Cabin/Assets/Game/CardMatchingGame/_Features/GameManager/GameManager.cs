@@ -91,7 +91,7 @@ public class GameManager : MonoBehaviour
 
         if (boardSystem != null)
         {
-            boardSystem.Init(savedLevel, _scoreSystem, uiController, audioManager);
+            boardSystem.InitFromSave(savedLevel, _scoreSystem, saveData.cards, uiController, audioManager);
             boardSystem.OnGameCompletedEvent += OnLevelCompleted;
             
             if (cameraController != null)

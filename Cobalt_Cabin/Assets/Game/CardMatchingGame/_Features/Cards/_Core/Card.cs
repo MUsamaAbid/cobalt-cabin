@@ -91,6 +91,23 @@ public class Card : MonoBehaviour
         _flipCoroutine = StartCoroutine(FlipCard(true));
     }
 
+    public void RevealImmediate()
+    {
+        if (_isMatched)
+            return;
+
+        _isRevealed = true;
+        
+        if (_flipCoroutine != null)
+        {
+            StopCoroutine(_flipCoroutine);
+        }
+        
+        FrontSpriteRenderer.enabled = true;
+        BackSpriteRenderer.enabled = false;
+        transform.localScale = new Vector3(1, 1, 1);
+    }
+
     public void Hide()
     {
         if (_isFlipping || !_isRevealed || _isMatched)

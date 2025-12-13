@@ -22,6 +22,15 @@ public class BoardSystem : MonoBehaviour
         controller.OnGameCompleted += OnGameCompleted;
     }
 
+    public void InitFromSave(LevelDataConfig levelDataConfig, GameScoreSystem scoreSystem, List<CardSaveData> savedCards, GameUIController uiController = null, AudioManager audioManager = null)
+    {
+        ClearBoard();
+        
+        controller = new CardSystemController(cardSystemConfig, scoreSystem, cardHolder, this, uiController, audioManager);
+        controller.GenerateCardsFromSave(levelDataConfig, savedCards);
+        controller.OnGameCompleted += OnGameCompleted;
+    }
+
     void ClearBoard()
     {
         if (controller != null)
